@@ -6,6 +6,26 @@
 <title>EasyHisab - Ultimate Groww Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+<!-- Firebase App SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBvM0-R_QFCIbZivzms734NapDVWcPAcaA",
+    authDomain: "easyhisab-4a43f.firebaseapp.com",
+    projectId: "easyhisab-4a43f",
+    storageBucket: "easyhisab-4a43f.firebasestorage.app",
+    messagingSenderId: "89881180991",
+    appId: "1:89881180991:web:ee2354a9ca9d80c43ef18a",
+    measurementId: "G-SWLC7KHZB3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  window.firebaseApp = app;
+</script>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 
@@ -349,7 +369,7 @@ td{color:var(--dark);font-weight:500}
 
 <body>
 
-<!-- Mobile Auth Modal (Sign In / Sign Up) - Initially hidden via CSS class or toggled via JS -->
+<!-- Mobile Auth Modal (Sign In / Sign Up) -->
 <div class="modal-bg" id="authModalBg">
   <div class="modal" style="max-width:400px; text-align:center;">
     <div class="logo" style="margin-bottom:6px;">Easy<span>Hisab</span></div>
@@ -415,7 +435,6 @@ td{color:var(--dark);font-weight:500}
             <span>Reset App</span><span>🗑️</span>
           </button>
         </div>
-        <!-- Hidden file input for restore feature -->
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="restoreData(event)">
       </div>
     </div>
@@ -533,13 +552,11 @@ td{color:var(--dark);font-weight:500}
         <div class="section-head">
           <div class="card-title" style="margin:0">All Transactions History</div>
           <div class="section-actions">
-            <!-- Type Filter -->
             <select class="filter-select" id="typeFilter" onchange="renderTransactions()">
               <option value="all">All Types</option>
               <option value="income">Income Only</option>
               <option value="expense">Expense Only</option>
             </select>
-            <!-- Date Range Filters -->
             <div class="date-filter-wrap">
               <span>From:</span>
               <input type="date" id="fromDateFilter" onchange="renderTransactions()">
@@ -632,7 +649,6 @@ let currentTheme = localStorage.getItem("easyhisab_theme") || "light";
 document.documentElement.setAttribute("data-theme", currentTheme);
 updateThemeButton();
 
-// Check authentication on load
 if(!currentMobile) {
   document.getElementById("authModalBg").classList.add("show");
 } else {
@@ -649,12 +665,9 @@ function handleAuthSubmit() {
 
   const nameGroup = document.getElementById("authNameGroup");
   const nameInput = document.getElementById("authNameInput");
-
-  // Check if user exists
   const existingName = localStorage.getItem(`easyhisab_name_${mobile}`);
   
   if(!existingName) {
-    // If name field is not visible yet, show it for Sign Up
     if(nameGroup.style.display === "none") {
       nameGroup.style.display = "block";
       showToast("Number not registered. Please enter your name to Sign Up.");
@@ -668,7 +681,6 @@ function handleAuthSubmit() {
     localStorage.setItem(`easyhisab_name_${mobile}`, nameVal);
   }
 
-  // Complete Sign In / Sign Up
   currentMobile = mobile;
   localStorage.setItem("easyhisab_current_mobile", currentMobile);
   document.getElementById("authModalBg").classList.remove("show");
@@ -696,7 +708,6 @@ function logoutApp() {
   location.reload();
 }
 
-/* Settings Menu Functions */
 function toggleSettingsMenu(e) {
   e.stopPropagation();
   document.getElementById("settingsDropdown").classList.toggle("show");
@@ -735,7 +746,6 @@ function updateUserNameDisplay() {
   if(isDash) document.getElementById("pageTitle").innerHTML = `👋 Hi, <span id="userNameDisplay">${userName}</span>`;
 }
 
-/* Data Management Functions */
 function exportToCSV() {
   if(!transactions.length) return showToast("No data to export!");
   let csv = "Date,Type,Category,Payment Mode,Amount,Note\n";
@@ -799,7 +809,6 @@ function resetApp() {
   }
 }
 
-/* Base Functions */
 function formatMoney(amount){ return "₹" + Number(amount || 0).toLocaleString("en-IN"); }
 function today(){ return new Date().toISOString().split("T")[0]; }
 
@@ -995,12 +1004,9 @@ function renderTransactions(){
   let data = [...transactions].filter(t => {
     const matchSearch = t.note.toLowerCase().includes(search) || t.category.toLowerCase().includes(search) || t.payment.toLowerCase().includes(search);
     const matchType = typeFilter === "all" || t.type === typeFilter;
-    
-    // Date range check
     let matchDate = true;
     if(fromDate && t.date < fromDate) matchDate = false;
     if(toDate && t.date > toDate) matchDate = false;
-
     return matchSearch && matchType && matchDate;
   }).sort((a,b)=>new Date(b.date)-new Date(a.date));
 
@@ -1041,7 +1047,7 @@ function updateModalType(){
 
 function saveTransaction(){
   const amount=Number(document.getElementById("amountInput").value);
-  const type=document.getElementById("typeInput").value;
+  const type=document.getElementById("typeInput0" || "typeInput").value;
   const category=document.getElementById("categoryInput").value;
   const payment=document.getElementById("paymentInput").value;
   const date=document.getElementById("dateInput").value;
